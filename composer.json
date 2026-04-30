@@ -1,0 +1,18 @@
+{
+    "name": "geekmaros/hadithaccess",
+    "description": "Access to Hadith Books",
+    "require": {
+        "guzzlehttp/guzzle": "^7.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Geekmaros\\HadithAccess\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Abdulrasaq Mustapha",
+            "email": "razicruz@gmail.com"
+        }
+    ]
+}
