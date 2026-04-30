@@ -7,11 +7,19 @@ use GuzzleHttp\Client;
 class AppService
 {
     public Client $client;
+    private string $apiKey;
+
     public function __construct(
-        private readonly string $apiKey = '$2y$10$1uovWialwIWEJ9BFjB2V9Cuji2O3C775IEgVQAZBPpJkx2lq',
         private readonly string $apiUrl = 'https://hadithapi.com/api',
     )
     {
+        $apiKey = getenv('HADITH_API_KEY') ?: ($_ENV['HADITH_API_KEY'] ?? '');
+
+        if ($apiKey === '') {
+            throw new \RuntimeException('HADITH_API_KEY environment variable is not set.');
+        }
+
+        $this->apiKey = $apiKey;
         $this->client = new Client([]);
     }
 
