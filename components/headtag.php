@@ -1,10 +1,38 @@
 <?php
-
+$siteTitle = $pageTitle ?? 'Hadith Access';
+$siteDescription = $pageDescription ?? 'A curated gateway to authentic hadith collections, chapters, and verified narrations.';
+$requestHost = $_SERVER['HTTP_HOST'] ?? 'hadithaccess.fly.dev';
+$requestPath = strtok($_SERVER['REQUEST_URI'] ?? '/index.php', '?') ?: '/index.php';
+$requestScheme = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? (
+    (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'
+);
+$siteUrl = $requestScheme . '://' . $requestHost . $requestPath;
+$ogImage = $requestScheme . '://' . $requestHost . '/components/hadithog.png';
 ?>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hadith-Access</title>
+    <title><?= htmlspecialchars($siteTitle) ?></title>
+    <meta name="description" content="<?= htmlspecialchars($siteDescription) ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($siteUrl) ?>">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Hadith Access">
+    <meta property="og:title" content="<?= htmlspecialchars($siteTitle) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($siteDescription) ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($siteUrl) ?>">
+    <meta property="og:image" content="<?= htmlspecialchars($ogImage) ?>">
+    <meta property="og:image:secure_url" content="<?= htmlspecialchars($ogImage) ?>">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="2996">
+    <meta property="og:image:height" content="1656">
+    <meta property="og:image:alt" content="Hadith Access website preview">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= htmlspecialchars($siteTitle) ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($siteDescription) ?>">
+    <meta name="twitter:image" content="<?= htmlspecialchars($ogImage) ?>">
+    <meta name="twitter:image:alt" content="Hadith Access website preview">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -155,4 +183,3 @@
         .cards-grid > *:nth-child(8)  { animation-delay: 0.59s; }
         .cards-grid > *:nth-child(9)  { animation-delay: 0.66s; }
     </style>
-
