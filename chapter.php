@@ -5,13 +5,21 @@ $dotenv->safeLoad();
 
 use Geekmaros\HadithAccess\AppService\AppService;
 
-$appService = new AppService();
-
 $bookSlug  = $_GET['slug']    ?? '';
 $chapterNo = $_GET['chapter'] ?? '';
-$page      = (int) ($_GET['page'] ?? 1);
+$page      = max(1, (int) ($_GET['page'] ?? 1));
 
-$hadithData = $appService->getHadithChapter($bookSlug, $chapterNo, $page);
+$hadithData = [];
+$chapterLoadError = false;
+
+try {
+    $appService = new AppService();
+    $hadithData = $appService->getHadithChapter($bookSlug, $chapterNo, $page);
+} catch (Throwable $exception) {
+    $chapterLoadError = true;
+    http_response_code(503);
+    error_log('Chapter page failed to load: ' . $exception->getMessage());
+}
 
 $pagination = $hadithData['hadiths']         ?? [];
 $hadiths    = $hadithData['hadiths']['data'] ?? [];
@@ -27,6 +35,8 @@ $totalHadiths = (int) ($pagination['total']        ?? count($hadiths));
 $perPage      = (int) ($pagination['per_page']     ?? 25);
 $prevPage     = $currentPage > 1          ? $currentPage - 1 : null;
 $nextPage     = $currentPage < $lastPage  ? $currentPage + 1 : null;
+$retryUrl     = pageUrl($bookSlug, $chapterNo, $page);
+$pageTitle    = $chapterLoadError ? 'Chapter temporarily unavailable - Hadith Access' : 'Hadith Access';
 
 function gradeClass(string $s): string {
     $s = strtolower(trim($s));
@@ -58,7 +68,7 @@ function pageUrl(string $slug, string $ch, int $p): string {
     <nav class="breadcrumb anim d1">
         <a href="index.php">All Collections</a>
         <span style="opacity:.3;">›</span>
-        <a href="book.php?slug=<?= urlencode($bookSlug) ?>"><?= htmlspecialchars($book['bookName'] ?? 'Book') ?></a>
+        <a href="books.php?slug=<?= urlencode($bookSlug) ?>"><?= htmlspecialchars($book['bookName'] ?? 'Book') ?></a>
         <span style="opacity:.3;">›</span>
         <span style="color:rgba(248,243,234,0.75);">Chapter <?= htmlspecialchars($chapter['chapterNumber'] ?? $chapterNo) ?></span>
     </nav>
@@ -100,6 +110,25 @@ function pageUrl(string $slug, string $ch, int $p): string {
             </span>
         </div>
     </div>
+
+    <?php if ($chapterLoadError): ?>
+        <section style="background:#fff;border:1px solid var(--border);border-radius:4px;padding:2rem 1.5rem;margin-bottom:4rem;text-align:center;box-shadow:0 8px 32px rgba(27,77,62,0.08);">
+            <div style="width:46px;height:46px;border-radius:50%;background:var(--emerald-dim);color:var(--gold);display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/>
+                    <circle cx="12" cy="12" r="9"/>
+                </svg>
+            </div>
+            <p class="font-heading" style="font-size:1.45rem;color:var(--emerald);margin-bottom:0.5rem;">This chapter is temporarily unavailable</p>
+            <p style="color:var(--muted);font-size:0.95rem;line-height:1.7;max-width:520px;margin:0 auto 1.3rem;">
+                The chapter can be visited again in a short while. The hadith endpoint is not responding correctly right now.
+            </p>
+            <div style="display:flex;justify-content:center;gap:0.75rem;flex-wrap:wrap;">
+                <a href="<?= htmlspecialchars($retryUrl) ?>" class="page-btn" style="background:var(--emerald);color:var(--gold-light);border-color:var(--emerald);min-width:110px;">Try again</a>
+                <a href="/index.php" class="page-btn" style="min-width:130px;">All collections</a>
+            </div>
+        </section>
+    <?php else: ?>
 
     <!-- Section label -->
     <div class="gold-rule" style="margin-bottom:2rem;">
@@ -221,6 +250,8 @@ function pageUrl(string $slug, string $ch, int $p): string {
         </span>
             <?php endif; ?>
         </nav>
+    <?php endif; ?>
+
     <?php endif; ?>
 
 </main>
