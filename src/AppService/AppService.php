@@ -48,13 +48,14 @@ class AppService
 
     }
 
-    public function getHadithChapter (string $bookSlug, string $chapter): array {
+    public function getHadithChapter (string $bookSlug, string $chapter, int $page = 1): array {
 
         $response = $this->client->request('GET', $this->apiUrl.'/hadiths', [
             'query' => [
                 'apiKey' => $this->apiKey,
                 'book' => $bookSlug,
                 'chapter' => $chapter,
+                'page' => max(1, $page),
 
             ]
         ]);
